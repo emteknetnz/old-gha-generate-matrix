@@ -1,0 +1,62 @@
+name: Generate Matrix
+description: GitHub Action to create a dynamic Silverstripe CI matrix
+inputs:
+  # extra jobs must be multi-line string, as there's no support for type: array for inputs
+  extra_jobs:
+    type: string
+    required: false
+    default: ''
+  composer_require_extra:
+    type: string
+    required: false
+    default: ''
+  # simple matrix will only run a single php 7.4 mysql 5.7 job instead of a full matrix
+  simple_matrix:
+    type: boolean
+    default: false
+  run_endtoend:
+    type: boolean
+    default: true
+  run_phpcoverage:
+    type: boolean
+    # modules on silverstripe account will ignore this and always run codecov
+    default: false
+  run_phplinting:
+    type: boolean
+    default: true
+  run_phpunit:
+    type: boolean
+    default: true
+  run_js:
+    type: boolean
+    default: true
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+runs:
+  using: composite
+  steps:  
+    # TODO: confirm this actually does checkout the pull-request code in this context, or if instead if checkouts the action code
+    - name: Checkout code
+      uses: actions/checkout@v2
+    # TODO: pin deps to shas
+    - name: Install PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        extensions: yaml
+    - name: Create inputs.yml
+      run: |
+        touch inputs.yml
+        echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
+        echo "run_js: ${{ inputs.run_js }}" >> inputs.yml
+        echo "run_phpcoverage: ${{ inputs.run_phpcoverage }}" >> inputs.yml
+        echo "run_phplinting: ${{ inputs.run_phplinting }}" >> inputs.yml
+        echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
+        echo "simple_matrix: ${{ inputs.simple_matrix }}" >> inputs.yml
+        echo "github_repository: ${{ github.repository }}" >> inputs.yml
+        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
+        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
+        echo "cat inputs.yml"
+        cat inputs.yml
+    - name: Run php script
+      run: |
+        php ${{ github.action_path }}/script.php
