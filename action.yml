@@ -6,10 +6,6 @@ inputs:
     type: string
     required: false
     default: ''
-  composer_require_extra:
-    type: string
-    required: false
-    default: ''
   # simple matrix will only run a single php 7.4 mysql 5.7 job instead of a full matrix
   simple_matrix:
     type: boolean
@@ -37,8 +33,7 @@ outputs:
     value: ${{ steps.php-script.outputs.matrix }}
 runs:
   using: composite
-  steps:  
-    # TODO: confirm this actually does checkout the pull-request code in this context, or if instead if checkouts the action code
+  steps:
     - name: Checkout code
       uses: actions/checkout@v2
     # TODO: pin deps to shas
@@ -49,6 +44,10 @@ runs:
         extensions: yaml
     - name: Create __inputs.yml
       shell: bash
+      # Add string inputs to memory instead of using string substituion in shell script
+      # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+      env:
+        EXTRA_JOBS: ${{ inputs.extra_jobs }}
       run: |
         if [ -f __inputs.yml ]; then rm __inputs.yml; fi
         touch __inputs.yml
@@ -58,24 +57,15 @@ runs:
         echo "run_phplinting: ${{ inputs.run_phplinting }}" >> __inputs.yml
         echo "run_phpunit: ${{ inputs.run_phpunit }}" >> __inputs.yml
         echo "simple_matrix: ${{ inputs.simple_matrix }}" >> __inputs.yml
-        # this line may need to be hardened
         echo "github_repository: ${{ github.repository }}" >> __inputs.yml
-        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> __inputs.yml; fi
-        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> __inputs.yml; fi
+        if [[ "$EXTRA_JOBS" != "" ]]; then echo "extra_jobs:" >> __inputs.yml; fi
+        if [[ "$EXTRA_JOBS" != "" ]]; then echo "$EXTRA_JOBS" >> __inputs.yml; fi
         echo "cat __inputs.yml"
         cat __inputs.yml
-    - name: debug
-      shell: bash
-      run: |
-        echo "ls ."
-        ls .
-        echo "github.actions_path: ${{ github.action_path }}"
-        echo "ls ${{ github.action_path }}"
-        ls ${{ github.action_path }}
     - name: Run php script
       id: php-script
       shell: bash
       run: |
-        MATRIX_JSON=$(php ${{ github.action_path }}/__script.php)
+        MATRIX_JSON=$(php ${{ github.action_path }}/script.php)
         echo "MATRIX_JSON: $MATRIX_JSON"
         echo "::set-output name=matrix::${MATRIX_JSON}"
