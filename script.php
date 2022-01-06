@@ -1,6 +1,6 @@
 <?php
 // Reads inputs.yml and creates a new json matrix
-$inputs = yaml_parse(file_get_contents('inputs.yml'));
+$inputs = yaml_parse(file_get_contents('__inputs.yml'));
 $run = [];
 $extraJobs = [];
 $simpleMatrix = false;
