@@ -36,6 +36,7 @@ runs:
   steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      path: code
     - name: cat script
       shell: bash
       run: |
@@ -46,26 +47,25 @@ runs:
       with:
         php-version: '7.4'
         extensions: yaml
-    - name: Create __inputs.yml
+    - name: Create inputs.yml
       shell: bash
       # Add string inputs to memory instead of using string substituion in shell script
       # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
       env:
         EXTRA_JOBS: ${{ inputs.extra_jobs }}
       run: |
-        if [ -f __inputs.yml ]; then rm __inputs.yml; fi
-        touch __inputs.yml
-        echo "run_endtoend: ${{ inputs.run_endtoend }}" >> __inputs.yml
-        echo "run_js: ${{ inputs.run_js }}" >> __inputs.yml
-        echo "run_phpcoverage: ${{ inputs.run_phpcoverage }}" >> __inputs.yml
-        echo "run_phplinting: ${{ inputs.run_phplinting }}" >> __inputs.yml
-        echo "run_phpunit: ${{ inputs.run_phpunit }}" >> __inputs.yml
-        echo "simple_matrix: ${{ inputs.simple_matrix }}" >> __inputs.yml
-        echo "github_repository: ${{ github.repository }}" >> __inputs.yml
-        if [[ "$EXTRA_JOBS" != "" ]]; then echo "extra_jobs:" >> __inputs.yml; fi
-        if [[ "$EXTRA_JOBS" != "" ]]; then echo "$EXTRA_JOBS" >> __inputs.yml; fi
-        echo "cat __inputs.yml"
-        cat __inputs.yml
+        touch inputs.yml
+        echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
+        echo "run_js: ${{ inputs.run_js }}" >> inputs.yml
+        echo "run_phpcoverage: ${{ inputs.run_phpcoverage }}" >> inputs.yml
+        echo "run_phplinting: ${{ inputs.run_phplinting }}" >> inputs.yml
+        echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
+        echo "simple_matrix: ${{ inputs.simple_matrix }}" >> inputs.yml
+        echo "github_repository: ${{ github.repository }}" >> inputs.yml
+        if [[ "$EXTRA_JOBS" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
+        if [[ "$EXTRA_JOBS" != "" ]]; then echo "$EXTRA_JOBS" >> inputs.yml; fi
+        echo "cat inputs.yml"
+        cat inputs.yml
     - name: Run php script
       id: php-script
       shell: bash
