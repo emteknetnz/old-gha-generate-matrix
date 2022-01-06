@@ -36,7 +36,8 @@ runs:
   steps:
     - name: Checkout code
       uses: actions/checkout@v2
-      path: code
+      with:
+        path: code
     - name: cat script
       shell: bash
       run: |
