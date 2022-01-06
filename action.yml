@@ -48,6 +48,7 @@ runs:
         php-version: '7.4'
         extensions: yaml
     - name: Create inputs.yml
+      shell: bash
       run: |
         touch inputs.yml
         echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
@@ -63,6 +64,7 @@ runs:
         cat inputs.yml
     - name: Run php script
       id: php-script
+      shell: bash
       run: |
         MATRIX_JSON=$(php ${{ github.action_path }}/script.php)
         echo "MATRIX_JSON: $MATRIX_JSON"
