@@ -28,10 +28,10 @@ foreach ($inputs as $input => $value) {
     }
 }
 $matrix = ['include' => []];
-if ((file_exists('code/phpunit.xml') || file_exists('code/phpunit.xml.dist')) && $run['phpunit']) {
+if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['phpunit']) {
     $d = new DOMDocument();
     $d->preserveWhiteSpace = false;
-    $fn = file_exists('code/phpunit.xml') ? 'code/phpunit.xml' : 'code/phpunit.xml.dist';
+    $fn = file_exists('phpunit.xml') ? 'phpunit.xml' : 'phpunit.xml.dist';
     $d->load($fn);
     $x = new DOMXPath($d);
     $tss = $x->query('//testsuite');
@@ -52,13 +52,13 @@ if ((file_exists('code/phpunit.xml') || file_exists('code/phpunit.xml.dist')) &&
     }
 }
 // skip phpcs and behat on silverstripe-installer which include sample files for use in projects
-if ((file_exists('code/phpcs.xml') || file_exists('code/phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
+if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
     $matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
 }
 if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
     $matrix['include'][] = ['php' => '7.3', 'phpcoverage' => true];
 }
-if (file_exists('code/behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
+if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
     // graphql 3
     $matrix['include'][] = ['php' => '7.3', 'endtoend' => true];
     if (!$simpleMatrix) {
@@ -66,7 +66,7 @@ if (file_exists('code/behat.yml') && $run['endtoend'] && !preg_match('#/silverst
         $matrix['include'][] = ['php' => '8.0', 'endtoend' => true];
     }
 }
-if (file_exists('code/package.json') && $run['js']) {
+if (file_exists('package.json') && $run['js']) {
     $matrix['include'][] = ['php' => '7.4', 'js' => true];
 }
 foreach ($extraJobs as $arr) {

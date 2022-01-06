@@ -36,14 +36,6 @@ runs:
   steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: debug
-      shell: bash
-      run: |
-        pwd
-        ls
-        cat script.php
-        echo "${{ github.action_path }}"
-        cat ${{ github.action_path }}/script.php
     # TODO: pin deps to shas
     - name: Install PHP
       uses: shivammathur/setup-php@v2
