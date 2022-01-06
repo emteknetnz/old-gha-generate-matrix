@@ -47,25 +47,35 @@ runs:
       with:
         php-version: '7.4'
         extensions: yaml
-    - name: Create inputs.yml
+    - name: Create __inputs.yml
       shell: bash
       run: |
-        touch inputs.yml
-        echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
-        echo "run_js: ${{ inputs.run_js }}" >> inputs.yml
-        echo "run_phpcoverage: ${{ inputs.run_phpcoverage }}" >> inputs.yml
-        echo "run_phplinting: ${{ inputs.run_phplinting }}" >> inputs.yml
-        echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
-        echo "simple_matrix: ${{ inputs.simple_matrix }}" >> inputs.yml
-        echo "github_repository: ${{ github.repository }}" >> inputs.yml
-        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
-        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
-        echo "cat inputs.yml"
-        cat inputs.yml
+        if [ -f __inputs.yml ]; then rm __inputs.yml; fi
+        touch __inputs.yml
+        echo "run_endtoend: ${{ inputs.run_endtoend }}" >> __inputs.yml
+        echo "run_js: ${{ inputs.run_js }}" >> __inputs.yml
+        echo "run_phpcoverage: ${{ inputs.run_phpcoverage }}" >> __inputs.yml
+        echo "run_phplinting: ${{ inputs.run_phplinting }}" >> __inputs.yml
+        echo "run_phpunit: ${{ inputs.run_phpunit }}" >> __inputs.yml
+        echo "simple_matrix: ${{ inputs.simple_matrix }}" >> __inputs.yml
+        # this line may need to be hardened
+        echo "github_repository: ${{ github.repository }}" >> __inputs.yml
+        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> __inputs.yml; fi
+        if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> __inputs.yml; fi
+        echo "cat __inputs.yml"
+        cat __inputs.yml
+    - name: debug
+      shell: bash
+      run: |
+        echo "ls ."
+        ls .
+        echo "github.actions_path: ${{ github.action_path }}"
+        echo "ls ${{ github.action_path }}"
+        ls ${{ github.action_path }}
     - name: Run php script
       id: php-script
       shell: bash
       run: |
-        MATRIX_JSON=$(php ${{ github.action_path }}/script.php)
+        MATRIX_JSON=$(php ${{ github.action_path }}/__script.php)
         echo "MATRIX_JSON: $MATRIX_JSON"
         echo "::set-output name=matrix::${MATRIX_JSON}"
