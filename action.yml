@@ -36,6 +36,10 @@ runs:
   steps:
     - name: Checkout code
       uses: actions/checkout@v2
+    - name: cat script
+      shell: bash
+      run: |
+        cat script.php
     # TODO: pin deps to shas
     - name: Install PHP
       uses: shivammathur/setup-php@v2
