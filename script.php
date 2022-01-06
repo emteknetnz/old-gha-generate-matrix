@@ -1,10 +1,6 @@
 <?php
 // Reads inputs.yml and creates a new json matrix
 $inputs = yaml_parse(file_get_contents('__inputs.yml'));
-
-var_dump($inputs);
-var_dump(file_exists('phpunit.xml.dist'));
-
 $run = [];
 $extraJobs = [];
 $simpleMatrix = false;
