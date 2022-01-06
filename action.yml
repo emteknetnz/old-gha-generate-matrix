@@ -31,6 +31,10 @@ inputs:
     type: boolean
     default: true
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+outputs:
+  matrix:
+    description: JSON matrix
+    value: ${{ steps.php-script.outputs.matrix }}
 runs:
   using: composite
   steps:  
@@ -58,5 +62,8 @@ runs:
         echo "cat inputs.yml"
         cat inputs.yml
     - name: Run php script
+      id: php-script
       run: |
-        php ${{ github.action_path }}/script.php
+        MATRIX_JSON=$(php ${{ github.action_path }}/script.php)
+        echo "MATRIX_JSON: $MATRIX_JSON"
+        echo "::set-output name=matrix::${MATRIX_JSON}"
