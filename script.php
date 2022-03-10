@@ -56,11 +56,11 @@ if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('
     $matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
 }
 if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
-    $matrix['include'][] = ['php' => '7.3', 'phpcoverage' => true];
+    $matrix['include'][] = ['php' => '7.4', 'phpcoverage' => true];
 }
 if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
     // graphql 3
-    $matrix['include'][] = ['php' => '7.3', 'endtoend' => true, 'endtoend_suite' => 'root'];
+    $matrix['include'][] = ['php' => '7.4', 'endtoend' => true, 'endtoend_suite' => 'root'];
     if (!$simpleMatrix) {
         // graphql 4
         $matrix['include'][] = ['php' => '8.0', 'endtoend' => true, 'endtoend_suite' => 'root'];
