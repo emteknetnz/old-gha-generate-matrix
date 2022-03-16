@@ -7,10 +7,10 @@ $simpleMatrix = false;
 $githubRepository = '';
 foreach ($inputs as $input => $value) {
     if (preg_match('#^run_#', $input)) {
-        if ($value === 'true') {
+        if ($value === 'true' || $value === true) {
             $value = true;
         }
-        if ($value === 'false') {
+        if ($value === 'false' || $value === false) {
             $value = false;
         }
         // e.g. run_phplinting => phplinting
@@ -22,7 +22,7 @@ foreach ($inputs as $input => $value) {
         }
         $extraJobs = $value;
     } else if ($input === 'simple_matrix') {
-        $simpleMatrix = $value === 'true';
+        $simpleMatrix = $value === 'true' || $value === true;
     } else if ($input === 'github_repository') {
         $githubRepository = $value;
     }
