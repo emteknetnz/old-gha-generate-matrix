@@ -39,35 +39,77 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
         if (!$ts->hasAttribute('name') || $ts->getAttribute('name') == 'Default') {
             continue;
         }
-        $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
+        $matrix['include'][] = [
+            'php' => '7.4',
+            'db' => 'mysql57',
+            'phpunit' => true,
+            'phpunit_suite' => $ts->getAttribute('name')
+        ];
         if (!$simpleMatrix) {
-            $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
+            $matrix['include'][] = [
+                'php' => '8.0',
+                'db' => 'mysql80',
+                'phpunit' => true,
+                'phpunit_suite' => $ts->getAttribute('name')
+            ];
         }
     }
     if (count($matrix['include']) == 0) {
-        $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => 'all'];
+        $matrix['include'][] = [
+            'php' => '7.4',
+            'db' => 'mysql57',
+            'phpunit' => true,
+            'phpunit_suite' => 'all'
+        ];
         if (!$simpleMatrix) {
-            $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => 'all'];
+            $matrix['include'][] = [
+                'php' => '8.0',
+                'db' => 'mysql80',
+                'phpunit' => true,
+                'phpunit_suite' => 'all'
+            ];
         }
     }
 }
 // skip phpcs and behat on silverstripe-installer which include sample files for use in projects
 if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
-    $matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
+    $matrix['include'][] = [
+        'php' => '7.4',
+        'db' => 'mysql57',
+        'phplinting' => true
+    ];
 }
 if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
-    $matrix['include'][] = ['php' => '7.4', 'phpcoverage' => true];
+    $matrix['include'][] = [
+        'php' => '7.4',
+        'db' => 'mysql57',
+        'phpcoverage' => true
+    ];
 }
 if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
     // graphql 3
-    $matrix['include'][] = ['php' => '7.4', 'endtoend' => true, 'endtoend_suite' => 'root'];
+    $matrix['include'][] = [
+        'php' => '7.4',
+        'db' => 'mysql57',
+        'endtoend' => true,
+        'endtoend_suite' => 'root'
+    ];
     if (!$simpleMatrix) {
         // graphql 4
-        $matrix['include'][] = ['php' => '8.0', 'endtoend' => true, 'endtoend_suite' => 'root'];
+        $matrix['include'][] = [
+            'php' => '8.0',
+            'db' => 'pgsql',
+            'endtoend' => true,
+            'endtoend_suite' => 'root'
+        ];
     }
 }
 if (file_exists('package.json') && $run['js']) {
-    $matrix['include'][] = ['php' => '7.4', 'js' => true];
+    $matrix['include'][] = [
+        'php' => '7.4',
+        'db' => 'mysql57',
+        'js' => true
+    ];
 }
 foreach ($extraJobs as $arr) {
     $matrix['include'][] = $arr;
