@@ -1,6 +1,108 @@
 <?php
+
+# Manually update this after each minor CMS release
+$installerToPhpVersions = [
+    '4.9' => [
+        '7.1',
+        '7.2',
+        '7.3',
+        '7.4'
+    ],
+    '4.10' => [
+        '7.3',
+        '7.4',
+        '8.0',
+    ],
+    '4.11' => [
+        '7.4',
+        '8.0',
+        '8.1',
+    ],
+    '4' => [
+        '7.4',
+        '8.0',
+        '8.1',
+    ],
+];
+
+function isLockedStepped($repo) {
+    return in_array($repo, [
+        'silverstripe-admin',
+        'silverstripe-asset-admin',
+        'silverstripe-assets',
+        'silverstripe-campaign-admin',
+        'silverstripe-cms',
+        'silverstripe-errorpage',
+        'silverstripe-framework',
+        'silverstripe-reports',
+        'silverstripe-siteconfig',
+        'silverstripe-versioned',
+        'silverstripe-versioned-admin',
+        // recipe-solr-search is not a true recipe, doesn't include recipe-cms/core
+        'recipe-solr-search',
+    ]);
+}
+
+function isRecipe($repo) {
+    // these include recipe-cms/core, so we don't want to composer require installer
+    // in .travis.yml they use the 'self' provision rather than 'standard'
+    return in_array($repo, [
+        'recipe-authoring-tools',
+        'recipe-blog',
+        'recipe-ccl',
+        'recipe-cms',
+        'recipe-collaboration',
+        'recipe-content-blocks',
+        'recipe-core',
+        'recipe-form-building',
+        'recipe-kitchen-sink',
+        'recipe-reporting-tools',
+        'recipe-services',
+        'silverstripe-installer',
+    ]);
+}
+
+function getInstallerVersion($repo, $branch) {
+    global $installerToPhpVersions;
+    if (isRecipe($repo)) {
+        return '';
+    }
+    $v = explode('.', $branch);
+    if (count($v) == 1) {
+        return '4.x-dev';
+    }
+    if (isLockedStepped($repo)) {
+        return '4' . $v[1] . 'x-dev';
+    } else {
+        // use the latest minor version of installer
+        $a = array_keys($installerToPhpVersions);
+        $a = array_map(fn($k) => (int) $k, $a);
+        sort($a);
+        return $a[count($a) - 1] . 'x-dev';
+    }
+}
+
+function createJob($phpNum, $opts) {
+    global $installerToPhpVersions, $installerVersion;
+    $phpVersions = $installerToPhpVersions[$installerVersion];
+    $default = [
+        'installer_version' => $installerVersion,
+        'php' => $phpVersions[$phpNum] ?? $phpVersions[count($phpVersions) - 1],
+        'db' => 'mysql57',
+        'composer_args' => ''
+    ];
+    return array_merge($default, $opts);
+}
+
 // Reads inputs.yml and creates a new json matrix
 $inputs = yaml_parse(file_get_contents('__inputs.yml'));
+
+// $myRef will either be a branch for push (i.e cron) and pull-request (target branch), or a semver tag
+$myRef = $inputs['github_my_ref'];
+$branch = preg_match('#^[0-9]+\.[0-9]+\.[0-9]+$#', $m) ? sprintf('%d.%d', $m[1], $m[2]) : $myRef;
+
+$installerVersion = getInstallerVersion($inputs['github_repository'], $branch);
+
 $run = [];
 $extraJobs = [];
 $simpleMatrix = false;
@@ -39,77 +141,83 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
         if (!$ts->hasAttribute('name') || $ts->getAttribute('name') == 'Default') {
             continue;
         }
-        $matrix['include'][] = [
-            'php' => '7.4',
-            'db' => 'mysql57',
-            'phpunit' => true,
-            'phpunit_suite' => $ts->getAttribute('name')
-        ];
-        if (!$simpleMatrix) {
-            $matrix['include'][] = [
-                'php' => '8.0',
+        if ($simpleMatrix) {
+            $matrix['include'][] = createJob(0, [
+                'phpunit' => true,
+                'phpunit_suite' => $ts->getAttribute('name'),
+            ]);
+        } else {
+            $matrix['include'][] = createJob(0, [
+                'composer_args' => '--prefer-lowest',
+                'phpunit' => true,
+                'phpunit_suite' => $ts->getAttribute('name'),
+            ]);
+            $matrix['include'][] = createJob(2, [
+                'db' => 'postgres',
+                'phpunit' => true,
+                'phpunit_suite' => $ts->getAttribute('name')
+            ]);
+            $matrix['include'][] = createJob(3, [
                 'db' => 'mysql80',
                 'phpunit' => true,
                 'phpunit_suite' => $ts->getAttribute('name')
-            ];
+            ]);
         }
     }
     if (count($matrix['include']) == 0) {
-        $matrix['include'][] = [
-            'php' => '7.4',
-            'db' => 'mysql57',
-            'phpunit' => true,
-            'phpunit_suite' => 'all'
-        ];
-        if (!$simpleMatrix) {
-            $matrix['include'][] = [
-                'php' => '8.0',
+        if ($simpleMatrix) {
+            $matrix['include'][] = createJob(0, [
+                'phpunit' => true,
+                'phpunit_suite' => 'all'
+            ]);
+        } else {
+            $matrix['include'][] = createJob(0, [
+                'composer_args' => '--prefer-lowest',
+                'phpunit' => true,
+                'phpunit_suite' => 'all'
+            ]);
+            $matrix['include'][] = createJob(2, [
+                'db' => 'postgres',
+                'phpunit' => true,
+                'phpunit_suite' => 'all'
+            ]);
+            $matrix['include'][] = createJob(3, [
                 'db' => 'mysql80',
                 'phpunit' => true,
                 'phpunit_suite' => 'all'
-            ];
+            ]);
         }
     }
 }
 // skip phpcs and behat on silverstripe-installer which include sample files for use in projects
 if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
-    $matrix['include'][] = [
-        'php' => '7.4',
-        'db' => 'mysql57',
+    $matrix['include'][] = createJob(0, [
         'phplinting' => true
-    ];
+    ]);
 }
+// phpcoverage also runs unit tests
 if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
-    $matrix['include'][] = [
-        'php' => '7.4',
-        'db' => 'mysql57',
+    $matrix['include'][] = createJob(1, [
         'phpcoverage' => true
-    ];
+    ]);
 }
 if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
-    // graphql 3
-    $matrix['include'][] = [
-        'php' => '7.4',
-        'db' => 'mysql57',
+    $matrix['include'][] = createJob(0, [
         'endtoend' => true,
         'endtoend_suite' => 'root'
-    ];
+    ]);
     if (!$simpleMatrix) {
-        // graphql 4
-        $matrix['include'][] = [
-            'php' => '8.0',
+        $matrix['include'][] = createJob(4, [
             'db' => 'pgsql',
             'endtoend' => true,
             'endtoend_suite' => 'root'
-        ];
+        ]);
     }
 }
 if (file_exists('package.json') && $run['js']) {
-    $matrix['include'][] = [
-        'php' => '7.4',
-        'db' => 'mysql57',
+    $matrix['include'][] = createJob(0, [
         'js' => true
-    ];
+    ]);
 }
 foreach ($extraJobs as $arr) {
     $matrix['include'][] = $arr;
