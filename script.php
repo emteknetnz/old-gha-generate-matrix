@@ -224,7 +224,7 @@ if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-
         'endtoend_suite' => 'root'
     ]);
     if (!$simpleMatrix) {
-        $phpNum = $simpleMatrix ? 0 : 4;
+        $phpNum = 1;
         $matrix['include'][] = createJob($phpNum, [
             'db' => DB_PGSQL,
             'endtoend' => true,
