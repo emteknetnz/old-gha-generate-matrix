@@ -1,5 +1,10 @@
 <?php
 
+const DB_MYSQL_57 = 'mysql57';
+const DB_MYSQL_57_PDO = 'mysql57pdo';
+const DB_MYSQL_80 = 'mysql80';
+const DB_PGSQL = 'pgsql';
+
 # Manually update this after each minor CMS release
 $installerToPhpVersions = [
     '4.9' => [
@@ -94,7 +99,7 @@ function createJob($phpNum, $opts)
     $default = [
         'installer_version' => $installerVersion,
         'php' => $phpVersions[$phpNum] ?? $phpVersions[count($phpVersions) - 1],
-        'db' => 'mysql57',
+        'db' => DB_MYSQL_57,
         'composer_args' => ''
     ];
     return array_merge($default, $opts);
@@ -165,7 +170,7 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
                 'phpunit_suite' => $ts->getAttribute('name')
             ]);
             $matrix['include'][] = createJob(3, [
-                'db' => 'mysql80',
+                'db' => DB_MYSQL_80,
                 'phpunit' => true,
                 'phpunit_suite' => $ts->getAttribute('name')
             ]);
@@ -184,12 +189,12 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
                 'phpunit_suite' => 'all'
             ]);
             $matrix['include'][] = createJob(1, [
-                'db' => 'pgsql',
+                'db' => DB_PGSQL,
                 'phpunit' => true,
                 'phpunit_suite' => 'all'
             ]);
             $matrix['include'][] = createJob(3, [
-                'db' => 'mysql80',
+                'db' => DB_MYSQL_80,
                 'phpunit' => true,
                 'phpunit_suite' => 'all'
             ]);
@@ -204,8 +209,11 @@ if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('
 }
 // phpcoverage also runs unit tests
 // always run on silverstripe account
-if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
-    $matrix['include'][] = createJob(2, [
+// TODO: remove todo forcing it to run
+if (true || $run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
+    $phpNum = $simpleMatrix ? 0 : 2;
+    $matrix['include'][] = createJob($phpNum, [
+        'db' => DB_MYSQL_57_PDO,
         'phpcoverage' => true
     ]);
 }
@@ -216,8 +224,9 @@ if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-
         'endtoend_suite' => 'root'
     ]);
     if (!$simpleMatrix) {
-        $matrix['include'][] = createJob(4, [
-            'db' => 'pgsql',
+        $phpNum = $simpleMatrix ? 0 : 4;
+        $matrix['include'][] = createJob($phpNum, [
+            'db' => DB_PGSQL,
             'endtoend' => true,
             'endtoend_suite' => 'root'
         ]);
