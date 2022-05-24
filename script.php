@@ -155,8 +155,8 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
                 'phpunit' => true,
                 'phpunit_suite' => $ts->getAttribute('name'),
             ]);
-            $matrix['include'][] = createJob(2, [
-                'db' => 'postgres',
+            $matrix['include'][] = createJob(1, [
+                'db' => 'pgsql',
                 'phpunit' => true,
                 'phpunit_suite' => $ts->getAttribute('name')
             ]);
@@ -179,8 +179,8 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
                 'phpunit' => true,
                 'phpunit_suite' => 'all'
             ]);
-            $matrix['include'][] = createJob(2, [
-                'db' => 'postgres',
+            $matrix['include'][] = createJob(1, [
+                'db' => 'pgsql',
                 'phpunit' => true,
                 'phpunit_suite' => 'all'
             ]);
@@ -200,7 +200,7 @@ if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('
 }
 // phpcoverage also runs unit tests
 if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
-    $matrix['include'][] = createJob(1, [
+    $matrix['include'][] = createJob(2, [
         'phpcoverage' => true
     ]);
 }
