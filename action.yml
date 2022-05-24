@@ -49,8 +49,9 @@ runs:
       env:
         EXTRA_JOBS: ${{ inputs.extra_jobs }}
         GITHUB_REPOSITORY: ${{ github.repository }}
-        # base_ref is the target of a pull-request. on non-pr builds, github.ref is the branch
-        GITHUB_MY_REF: ${{ github.base_ref && github.base_ref || github.ref }}
+        # github.base_ref is the target branch on a pull-request
+        # github.ref_name is the name of the branch on push, and the tag on tag
+        GITHUB_MY_REF: ${{ github.base_ref && github.base_ref || github.ref_name }}
       run: |
         if [ -f __inputs.yml ]; then rm __inputs.yml; fi
         touch __inputs.yml
