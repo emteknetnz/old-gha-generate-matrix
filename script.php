@@ -43,7 +43,7 @@ function isLockedStepped($repo) {
     ]);
 }
 
-function isRecipe($repo) {
+function shouldNotRequireInstaller($repo) {
     // these include recipe-cms/core, so we don't want to composer require installer
     // in .travis.yml they use the 'self' provision rather than 'standard'
     return in_array($repo, [
@@ -59,12 +59,14 @@ function isRecipe($repo) {
         'recipe-reporting-tools',
         'recipe-services',
         'silverstripe-installer',
+        // vendor-plugin is not a recipe, though we also do not want installer
+        'vendor-plugin'
     ]);
 }
 
 function getInstallerVersion($repo, $branch) {
     global $installerToPhpVersions;
-    if (isRecipe($repo)) {
+    if (shouldNotRequireInstaller($repo)) {
         return '';
     }
     $v = explode('.', $branch);
