@@ -86,7 +86,7 @@ function getInstallerVersion($repo, $branch) {
 
 function createJob($phpNum, $opts) {
     global $installerToPhpVersions, $installerVersion;
-    $phpVersions = $installerToPhpVersions[$installerVersion];
+    $phpVersions = $installerToPhpVersions[str_replace('.x-dev', '', $installerVersion)];
     $default = [
         'installer_version' => $installerVersion,
         'php' => $phpVersions[$phpNum] ?? $phpVersions[count($phpVersions) - 1],
@@ -101,7 +101,8 @@ $inputs = yaml_parse(file_get_contents('__inputs.yml'));
 
 // $myRef will either be a branch for push (i.e cron) and pull-request (target branch), or a semver tag
 $myRef = $inputs['github_my_ref'];
-$branch = preg_match('#^[0-9]+\.[0-9]+\.[0-9]+$#', $m) ? sprintf('%d.%d', $m[1], $m[2]) : $myRef;
+$isTag = preg_match('#^[0-9]+\.[0-9]+\.[0-9]+$#', $m);
+$branch = $isTag ? sprintf('%d.%d', $m[1], $m[2]) : $myRef;
 
 $installerVersion = getInstallerVersion($inputs['github_repository'], $branch);
 
