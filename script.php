@@ -25,7 +25,8 @@ $installerToPhpVersions = [
     ],
 ];
 
-function isLockedStepped($repo) {
+function isLockedStepped($repo)
+{
     return in_array($repo, [
         'silverstripe-admin',
         'silverstripe-asset-admin',
@@ -43,7 +44,8 @@ function isLockedStepped($repo) {
     ]);
 }
 
-function shouldNotRequireInstaller($repo) {
+function shouldNotRequireInstaller($repo)
+{
     // these include recipe-cms/core, so we don't want to composer require installer
     // in .travis.yml they use the 'self' provision rather than 'standard'
     return in_array($repo, [
@@ -64,7 +66,8 @@ function shouldNotRequireInstaller($repo) {
     ]);
 }
 
-function getInstallerVersion($repo, $branch) {
+function getInstallerVersion($repo, $branch)
+{
     global $installerToPhpVersions;
     if (shouldNotRequireInstaller($repo)) {
         return '';
@@ -84,7 +87,8 @@ function getInstallerVersion($repo, $branch) {
     }
 }
 
-function createJob($phpNum, $opts) {
+function createJob($phpNum, $opts)
+{
     global $installerToPhpVersions, $installerVersion;
     $phpVersions = $installerToPhpVersions[str_replace('.x-dev', '', $installerVersion)];
     $default = [
@@ -192,18 +196,20 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
         }
     }
 }
-// skip phpcs and behat on silverstripe-installer which include sample files for use in projects
+// skip phpcs on silverstripe-installer which include sample file for use in projects
 if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
     $matrix['include'][] = createJob(0, [
         'phplinting' => true
     ]);
 }
 // phpcoverage also runs unit tests
+// always run on silverstripe account
 if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
     $matrix['include'][] = createJob(2, [
         'phpcoverage' => true
     ]);
 }
+// skip behat on silverstripe-installer which include sample file for use in projects
 if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
     $matrix['include'][] = createJob(0, [
         'endtoend' => true,
@@ -217,13 +223,14 @@ if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-
         ]);
     }
 }
+// javascript tests
 if (file_exists('package.json') && $run['js']) {
     $matrix['include'][] = createJob(0, [
         'js' => true
     ]);
 }
 foreach ($extraJobs as $arr) {
-    $matrix['include'][] = $arr;
+    $matrix['include'][] = createJob(0, $arr);
 }
 $json = json_encode($matrix);
 $json = preg_replace("#\n +#", "\n", $json);
