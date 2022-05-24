@@ -213,7 +213,7 @@ if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('
 if (true || $run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
     $phpNum = $simpleMatrix ? 0 : 2;
     $matrix['include'][] = createJob($phpNum, [
-        'db' => DB_MYSQL_57_PDO,
+        'db' => DB_PGSQL,
         'phpcoverage' => true
     ]);
 }
@@ -226,7 +226,7 @@ if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-
     if (!$simpleMatrix) {
         $phpNum = 1;
         $matrix['include'][] = createJob($phpNum, [
-            'db' => DB_PGSQL,
+            'db' => DB_MYSQL_57_PDO,
             'endtoend' => true,
             'endtoend_suite' => 'root'
         ]);
