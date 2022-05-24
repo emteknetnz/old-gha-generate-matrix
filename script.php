@@ -105,6 +105,11 @@ function createJob($phpNum, $opts)
     return array_merge($default, $opts);
 }
 
+function parseBoolValue($value)
+{
+    return ($value === 'true' || $value === true);
+}
+
 // Reads inputs.yml and creates a new json matrix
 $inputs = yaml_parse(file_get_contents('__inputs.yml'));
 
@@ -113,32 +118,24 @@ $myRef = $inputs['github_my_ref'];
 $isTag = preg_match('#^[0-9]+\.[0-9]+\.[0-9]+$#', $m);
 $branch = $isTag ? sprintf('%d.%d', $m[1], $m[2]) : $myRef;
 
+$githubRepository = $inputs['github_repository'];
 $installerVersion = getInstallerVersion($inputs['github_repository'], $branch);
 
 $run = [];
 $extraJobs = [];
 $simpleMatrix = false;
-$githubRepository = '';
 foreach ($inputs as $input => $value) {
     if (preg_match('#^run_#', $input)) {
-        if ($value === 'true' || $value === true) {
-            $value = true;
-        }
-        if ($value === 'false' || $value === false) {
-            $value = false;
-        }
         // e.g. run_phplinting => phplinting
         $type = str_replace('run_', '', $input);
-        $run[$type] = $value;
+        $run[$type] = parseBoolValue($value);
     } else if ($input === 'extra_jobs') {
         if ($value === 'none') {
             $value = [];
         }
         $extraJobs = $value;
     } else if ($input === 'simple_matrix') {
-        $simpleMatrix = $value === 'true' || $value === true;
-    } else if ($input === 'github_repository') {
-        $githubRepository = $value;
+        $simpleMatrix = parseBoolValue($value);
     }
 }
 $matrix = ['include' => []];
@@ -149,6 +146,7 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
     $d->load($fn);
     $x = new DOMXPath($d);
     $tss = $x->query('//testsuite');
+    // phpunit.xml has defined testsuites
     foreach ($tss as $ts) {
         if (!$ts->hasAttribute('name') || $ts->getAttribute('name') == 'Default') {
             continue;
@@ -176,6 +174,7 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
             ]);
         }
     }
+    // phpunit.xml has no defined testsuites
     if (count($matrix['include']) == 0) {
         if ($simpleMatrix) {
             $matrix['include'][] = createJob(0, [
@@ -209,13 +208,17 @@ if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('
 }
 // phpcoverage also runs unit tests
 // always run on silverstripe account
-// TODO: remove todo forcing it to run
-if (true || $run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
-    $phpNum = $simpleMatrix ? 0 : 2;
-    $matrix['include'][] = createJob($phpNum, [
-        'db' => DB_PGSQL,
-        'phpcoverage' => true
-    ]);
+if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
+    if ($simpleMatrix) {
+        $matrix['include'][] = createJob(0, [
+            'phpcoverage' => true
+        ]);
+    } else {
+        $matrix['include'][] = createJob(2, [
+            'db' => DB_MYSQL_57_PDO,
+            'phpcoverage' => true
+        ]);
+    }
 }
 // skip behat on silverstripe-installer which include sample file for use in projects
 if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
@@ -224,9 +227,8 @@ if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-
         'endtoend_suite' => 'root'
     ]);
     if (!$simpleMatrix) {
-        $phpNum = 1;
-        $matrix['include'][] = createJob($phpNum, [
-            'db' => DB_MYSQL_57_PDO,
+        $matrix['include'][] = createJob(3, [
+            'db' => DB_MYSQL_80,
             'endtoend' => true,
             'endtoend_suite' => 'root'
         ]);
@@ -238,9 +240,12 @@ if (file_exists('package.json') && $run['js']) {
         'js' => true
     ]);
 }
+// extra jobs
 foreach ($extraJobs as $arr) {
     $matrix['include'][] = createJob(0, $arr);
 }
+
+// output json
 $json = json_encode($matrix);
 $json = preg_replace("#\n +#", "\n", $json);
 $json = str_replace("\n", '', $json);
