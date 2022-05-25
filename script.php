@@ -100,10 +100,19 @@ function createJob($phpNum, $opts)
     $v = $v ?: '4';
     $phpVersions = $installerToPhpVersions[$v];
     $default = [
+        # ensure there's a default value for all possible return keys
+        # this allows use to use `if [ "${{ matrix.key }}" == "true" ]; then` in github-actions-ci-cd/ci.yml
         'installer_version' => $installerVersion,
         'php' => $phpVersions[$phpNum] ?? $phpVersions[count($phpVersions) - 1],
         'db' => DB_MYSQL_57,
-        'composer_args' => ''
+        'composer_args' => '',
+        'phpunit' => false,
+        'phpunit_suite' => '',
+        'phplinting' => false,
+        'phpcoverage' => false,
+        'endtoend' => false,
+        'endtoend_suite' => '',
+        'js' => false,
     ];
     return array_merge($default, $opts);
 }
@@ -223,8 +232,8 @@ if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
         ]);
     }
 }
-// skip behat on silverstripe-installer which include sample file for use in projects
-if (file_exists('behat.yml') && $run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
+// endtoend / behat
+if ($run['endtoend'] && file_exists('behat.yml')) {
     $matrix['include'][] = createJob(0, [
         'endtoend' => true,
         'endtoend_suite' => 'root'
