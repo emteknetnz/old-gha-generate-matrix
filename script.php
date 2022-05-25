@@ -71,9 +71,10 @@ function shouldNotRequireInstaller($repo)
     ]);
 }
 
-function getInstallerVersion($repo, $branch)
+function getInstallerVersion($githubRepository, $branch)
 {
     global $installerToPhpVersions;
+    $repo = explode('/', $githubRepository)[1];
     if (shouldNotRequireInstaller($repo)) {
         return '';
     }
@@ -115,11 +116,11 @@ $inputs = yaml_parse(file_get_contents('__inputs.yml'));
 
 // $myRef will either be a branch for push (i.e cron) and pull-request (target branch), or a semver tag
 $myRef = $inputs['github_my_ref'];
-$isTag = preg_match('#^[0-9]+\.[0-9]+\.[0-9]+$#', $m);
+$isTag = preg_match('#^[0-9]+\.[0-9]+\.[0-9]+$#', $myRef, $m);
 $branch = $isTag ? sprintf('%d.%d', $m[1], $m[2]) : $myRef;
 
 $githubRepository = $inputs['github_repository'];
-$installerVersion = getInstallerVersion($inputs['github_repository'], $branch);
+$installerVersion = getInstallerVersion($githubRepository, $branch);
 
 $run = [];
 $extraJobs = [];
