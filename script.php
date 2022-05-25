@@ -96,7 +96,9 @@ function getInstallerVersion($githubRepository, $branch)
 function createJob($phpNum, $opts)
 {
     global $installerToPhpVersions, $installerVersion;
-    $phpVersions = $installerToPhpVersions[str_replace('.x-dev', '', $installerVersion)];
+    $v = str_replace('.x-dev', '', $installerVersion);
+    $v = $v ?: '4';
+    $phpVersions = $installerToPhpVersions[$v];
     $default = [
         'installer_version' => $installerVersion,
         'php' => $phpVersions[$phpNum] ?? $phpVersions[count($phpVersions) - 1],
