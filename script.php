@@ -262,7 +262,7 @@ foreach ($extraJobs as $arr) {
     $matrix['include'][] = createJob(0, $arr);
 }
 
-// use string 'true' and string 'false' so that conditional equality tests are consistent in ci.yml
+// convert everything to strings and sanatise values
 foreach ($matrix['include'] as $i => $job) {
     foreach ($job as $key => $val) {
         if ($val === true) {
@@ -271,6 +271,8 @@ foreach ($matrix['include'] as $i => $job) {
         if ($val === false) {
             $val = 'false';
         }
+        // all values must be strings
+        $val = (string) $val;
         // strip out anything even slightly malicous from name_suffix
         if ($key === 'name_suffix') {
             $val = preg_replace('#[^A-Za-z0-9\- ]#', '', $val);
@@ -282,8 +284,10 @@ foreach ($matrix['include'] as $i => $job) {
         if ($key === 'composer_require_extra') {
             $val = preg_replace('#[^A-Za-z0-9\-\.\^\/~: ]#', '', $val);
         }
-        // all values must be strings e.g. php versions
-        $matrix['include'][$i][$key] = (string) $val;
+        // remove any dodgy characters from everything
+        $val = str_replace(["\r", "\n", "\t", "'", '"'], '', $val);
+        // replace value in matrix
+        $matrix['include'][$i][$key] = $val;
     }
 }
 
