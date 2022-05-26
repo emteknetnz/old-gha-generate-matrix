@@ -108,11 +108,11 @@ function createJob($phpNum, $opts)
         'composer_args' => '',
         'name_suffix' => '',
         'phpunit' => false,
-        'phpunit_suite' => '',
+        'phpunit_suite' => 'all',
         'phplinting' => false,
         'phpcoverage' => false,
         'endtoend' => false,
-        'endtoend_suite' => '',
+        'endtoend_suite' => 'root',
         'js' => false,
     ];
     return array_merge($default, $opts);
