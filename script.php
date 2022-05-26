@@ -297,5 +297,6 @@ foreach ($matrix['include'] as $i => $job) {
 // output json, keep it on a single line so do not use pretty print
 $json = json_encode($matrix);
 $json = preg_replace("#\n +#", "\n", $json);
+$json = str_replace('\\/', '/', $json);
 $json = str_replace("\n", '', $json);
 echo trim($json);
