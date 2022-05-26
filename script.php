@@ -142,6 +142,7 @@ $simpleMatrix = false;
 foreach ($inputs as $input => $value) {
     if (preg_match('#^run_#', $input)) {
         // e.g. run_phplinting => phplinting
+        # TODO: remove the 'run_' suffixes for here and ci.yml
         $type = str_replace('run_', '', $input);
         $run[$type] = parseBoolValue($value);
     } else if ($input === 'extra_jobs') {
