@@ -106,13 +106,13 @@ function createJob($phpNum, $opts)
         'php' => $phpVersions[$phpNum] ?? $phpVersions[count($phpVersions) - 1],
         'db' => DB_MYSQL_57,
         'composer_args' => '',
-        'phpunit' => false,
+        'phpunit' => 'false',
         'phpunit_suite' => '',
-        'phplinting' => false,
-        'phpcoverage' => false,
-        'endtoend' => false,
+        'phplinting' => 'false',
+        'phpcoverage' => 'false',
+        'endtoend' => 'false',
         'endtoend_suite' => '',
-        'js' => false,
+        'js' => 'false',
     ];
     return array_merge($default, $opts);
 }
@@ -165,18 +165,18 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
         }
         if ($simpleMatrix) {
             $matrix['include'][] = createJob(0, [
-                'phpunit' => true,
+                'phpunit' => 'true',
                 'phpunit_suite' => $ts->getAttribute('name'),
             ]);
         } else {
             $matrix['include'][] = createJob(0, [
                 'composer_args' => '--prefer-lowest',
-                'phpunit' => true,
+                'phpunit' => 'true',
                 'phpunit_suite' => $ts->getAttribute('name'),
             ]);
             $matrix['include'][] = createJob(1, [
                 'db' => 'pgsql',
-                'phpunit' => true,
+                'phpunit' => 'true',
                 'phpunit_suite' => $ts->getAttribute('name')
             ]);
             $matrix['include'][] = createJob(3, [
@@ -190,23 +190,23 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
     if (count($matrix['include']) == 0) {
         if ($simpleMatrix) {
             $matrix['include'][] = createJob(0, [
-                'phpunit' => true,
+                'phpunit' => 'true',
                 'phpunit_suite' => 'all'
             ]);
         } else {
             $matrix['include'][] = createJob(0, [
                 'composer_args' => '--prefer-lowest',
-                'phpunit' => true,
+                'phpunit' => 'true',
                 'phpunit_suite' => 'all'
             ]);
             $matrix['include'][] = createJob(1, [
                 'db' => DB_PGSQL,
-                'phpunit' => true,
+                'phpunit' => 'true',
                 'phpunit_suite' => 'all'
             ]);
             $matrix['include'][] = createJob(3, [
                 'db' => DB_MYSQL_80,
-                'phpunit' => true,
+                'phpunit' => 'true',
                 'phpunit_suite' => 'all'
             ]);
         }
@@ -215,7 +215,7 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
 // skip phpcs on silverstripe-installer which include sample file for use in projects
 if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
     $matrix['include'][] = createJob(0, [
-        'phplinting' => true
+        'phplinting' => 'true'
     ]);
 }
 // phpcoverage also runs unit tests
@@ -223,25 +223,25 @@ if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('
 if ($run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
     if ($simpleMatrix) {
         $matrix['include'][] = createJob(0, [
-            'phpcoverage' => true
+            'phpcoverage' => 'true'
         ]);
     } else {
         $matrix['include'][] = createJob(2, [
             'db' => DB_MYSQL_57_PDO,
-            'phpcoverage' => true
+            'phpcoverage' => 'true'
         ]);
     }
 }
 // endtoend / behat
 if ($run['endtoend'] && file_exists('behat.yml')) {
     $matrix['include'][] = createJob(0, [
-        'endtoend' => true,
+        'endtoend' => 'true',
         'endtoend_suite' => 'root'
     ]);
     if (!$simpleMatrix) {
         $matrix['include'][] = createJob(3, [
             'db' => DB_MYSQL_80,
-            'endtoend' => true,
+            'endtoend' => 'true',
             'endtoend_suite' => 'root'
         ]);
     }
@@ -249,7 +249,7 @@ if ($run['endtoend'] && file_exists('behat.yml')) {
 // javascript tests
 if (file_exists('package.json') && $run['js']) {
     $matrix['include'][] = createJob(0, [
-        'js' => true
+        'js' => 'true'
     ]);
 }
 // extra jobs
