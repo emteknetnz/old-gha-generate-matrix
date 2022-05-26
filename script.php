@@ -270,6 +270,13 @@ foreach ($matrix['include'] as $job) {
         if ($val === false) {
             $val = 'false';
         }
+        // strip out anything even slightly malicous from name_suffix
+        if ($key === 'name_suffix') {
+            $val = preg_replace('#[^A-Za-z0-9\- ]#', '', $val);
+            if (strlen($val) > 20) {
+                $val = substr($val, 0, 20);
+            }
+        }
         $job[$key] = $val;
     }
 }
