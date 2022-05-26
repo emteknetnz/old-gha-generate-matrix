@@ -278,6 +278,10 @@ foreach ($matrix['include'] as $i => $job) {
                 $val = substr($val, 0, 20);
             }
         }
+        // ditto for composer_require_extra
+        if ($key === 'composer_require_extra') {
+            $val = preg_replace('#[^A-Za-z0-9\-\.\^\/~: ]#', '', $val);
+        }
         // all values must be strings e.g. php versions
         $matrix['include'][$i][$key] = (string) $val;
     }
