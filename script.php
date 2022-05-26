@@ -105,6 +105,7 @@ function createJob($phpNum, $opts)
         'installer_version' => $installerVersion,
         'php' => $phpVersions[$phpNum] ?? $phpVersions[count($phpVersions) - 1],
         'db' => DB_MYSQL_57,
+        'composer_require_extra' => '',
         'composer_args' => '',
         'name_suffix' => '',
         'phpunit' => false,
