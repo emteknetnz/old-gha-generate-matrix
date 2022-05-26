@@ -120,7 +120,7 @@ function createJob($phpNum, $opts)
 
 function parseBoolValue($value)
 {
-    return ($value === true || $value === true);
+    return ($value === true || $value === 'true');
 }
 
 // Reads inputs.yml and creates a new json matrix
@@ -262,7 +262,7 @@ foreach ($extraJobs as $arr) {
 }
 
 // use string 'true' and string 'false' so that conditional equality tests are consistent in ci.yml
-foreach ($matrix['include'] as $job) {
+foreach ($matrix['include'] as $i => $job) {
     foreach ($job as $key => $val) {
         if ($val === true) {
             $val = 'true';
@@ -277,11 +277,12 @@ foreach ($matrix['include'] as $job) {
                 $val = substr($val, 0, 20);
             }
         }
-        $job[$key] = $val;
+        // all values must be strings e.g. php versions
+        $matrix['include'][$i][$key] = (string) $val;
     }
 }
 
-// output json
+// output json, keep it on a single line so do not use pretty print
 $json = json_encode($matrix);
 $json = preg_replace("#\n +#", "\n", $json);
 $json = str_replace("\n", '', $json);
