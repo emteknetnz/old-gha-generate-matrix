@@ -114,6 +114,7 @@ function createJob($phpNum, $opts)
         'phpcoverage' => false,
         'endtoend' => false,
         'endtoend_suite' => 'root',
+        'endtoend_config' => '',
         'js' => false,
     ];
     return array_merge($default, $opts);
@@ -273,20 +274,21 @@ foreach ($matrix['include'] as $i => $job) {
         }
         // all values must be strings
         $val = (string) $val;
-        // strip out anything even slightly malicous from name_suffix
+        // remove any dodgy characters
+        $val = str_replace(["\r", "\n", "\t", "'", '"', '&', '|'], '', $val);
+        // ascii chars only - https://www.regular-expressions.info/posixbrackets.html
+        $val = preg_replace('#[^\x20-\x7E]#', '', $val);
+        // limit name_suffix length
         if ($key === 'name_suffix') {
-            $val = preg_replace('#[^A-Za-z0-9\- ]#', '', $val);
             if (strlen($val) > 20) {
                 $val = substr($val, 0, 20);
             }
         }
-        // ditto for composer_require_extra
+        // be strict with composer_require_extra
         if ($key === 'composer_require_extra') {
             $val = preg_replace('#[^A-Za-z0-9\-\.\^\/~: ]#', '', $val);
         }
-        // remove any dodgy characters from everything
-        $val = str_replace(["\r", "\n", "\t", "'", '"'], '', $val);
-        // replace value in matrix
+        // add value back to matrix
         $matrix['include'][$i][$key] = $val;
     }
 }
