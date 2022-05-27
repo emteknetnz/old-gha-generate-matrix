@@ -279,9 +279,10 @@ foreach ($matrix['include'] as $i => $job) {
         $val = str_replace(["\r", "\n", "\t", "'", '"', '&', '|'], '', $val);
         // ascii chars only - https://www.regular-expressions.info/posixbrackets.html
         $val = preg_replace('#[^\x20-\x7E]#', '', $val);
-        // limit name_suffix length
+        // limit name_suffix length and be be strict as it's used in the artifact name
         if ($key === 'name_suffix') {
             if (strlen($val) > 20) {
+                $val = preg_replace('#[^a-zA-Z0-9_\- ]#', '', $val);
                 $val = substr($val, 0, 20);
             }
         }
