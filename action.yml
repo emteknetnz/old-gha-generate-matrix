@@ -10,20 +10,20 @@ inputs:
   simple_matrix:
     type: boolean
     default: false
-  run_endtoend:
+  endtoend:
     type: boolean
     default: true
-  run_phpcoverage:
+  phpcoverage:
     type: boolean
     # modules on silverstripe account will ignore this and always run codecov
     default: false
-  run_phplinting:
+  phplinting:
     type: boolean
     default: true
-  run_phpunit:
+  phpunit:
     type: boolean
     default: true
-  run_js:
+  js:
     type: boolean
     default: true
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
